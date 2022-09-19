@@ -55,7 +55,7 @@ class QLearningAgent(ReinforcementAgent):
         if (state, action) in self.Qvalues:
             result = self.Qvalues[(state, action)]
         else:
-            result = 0
+            result = 0.0
 
         return result
 
@@ -75,7 +75,7 @@ class QLearningAgent(ReinforcementAgent):
         if len(legalActions) > 0:
             return max(result)
         else:
-            return 0
+            return 0.0
 
     def computeActionFromQValues(self, state):
         """
@@ -84,17 +84,17 @@ class QLearningAgent(ReinforcementAgent):
           you should return None.
         """
         "*** YOUR CODE HERE ***"
+        
+        
+
         legalActions = self.getLegalActions(state)
-        action = None 
+        if len(legalActions)>0:
+            maxQ = max([self.getQValue(state, action) for action in legalActions])
+            maxActions = [action for action in legalActions if self.getQValue(state, action) == maxQ]
+            return random.choice(maxActions)
+        else:
+            return None
 
-        if len(legalActions) > 0:
-          rewards = [ self.getQValue(state, action) for action in legalActions] 
-          best_reward = max(rewards)
-          choosable_actions = [action for action in legalActions if self.getQValue(state, action) == best_reward]
-          # As noted on Readme Question 4 description, breaking ties randomly for better behavior
-          action = random.choice(choosable_actions)
-
-        return action
 
     def getAction(self, state):
         """
@@ -107,25 +107,18 @@ class QLearningAgent(ReinforcementAgent):
           HINT: You might want to use util.flipCoin(prob)
           HINT: To pick randomly from a list, use random.choice(list)
         """
-        # Pick Action
+        
         legalActions = self.getLegalActions(state)
-        action = None
+        
         "*** YOUR CODE HERE ***"
-        # Checks if there are legal actions.
         if len(legalActions) == 0:
             return None
-        # Choose between best action and random action with probability self.epsilon.
         if util.flipCoin(self.epsilon):
-            # Random action.
-            action = random.choice(legalActions)
+            return random.choice(legalActions)
         else:
-            # Choose best action.
-            # action_rewards = [ self.getQValue(state,action) for action in legalActions]
-            # action = legalActions[action_rewards.index(max(action_rewards))]
-            # P.S.: Changed this to use the method instead of replicating the logic here, please check if this is ok
-            action = self.computeActionFromQValues(state)
+            return self.computeActionFromQValues(state)
 
-        return action
+        
 
     def update(self, state, action, nextState, reward):
         """
@@ -137,15 +130,11 @@ class QLearningAgent(ReinforcementAgent):
           it will be called on your behalf
         """
         "*** YOUR CODE HERE ***"
-
-        alpha = self.alpha
-        Qk_sa = self.Qvalues[(state, action)]
-        r = reward
-        gamma = self.discount
-        max_a_Qk = self.computeValueFromQValues(nextState)
+        q0 =  QLearningAgent.getQValue(self, state, action)
+        q1 = QLearningAgent.computeValueFromQValues(self, nextState)
+        qnew = (1 - self.alpha) * q0 + self.alpha * (reward + self.discount * q1 )
         
-        # For the reference of this calculation, check page 87 of slides "aula15.pdf" (third set of slides for week 9 on moodle)
-        self.Qvalues[(state, action)] = (1 - alpha) * Qk_sa + alpha * (r + gamma * max_a_Qk)
+        self.Qvalues[(state, action)] = qnew
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)
@@ -209,14 +198,28 @@ class ApproximateQAgent(PacmanQAgent):
           where * is the dotProduct operator
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        feats = self.featExtractor.getFeatures(state,action)
+        q = 0 
+        for feature in feats:
+            q += self.weights[feature] * feats[feature]
+        return q
 
     def update(self, state, action, nextState, reward):
         """
            Should update your weights based on transition
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        q0 = self.getQValue(state, action)
+        #q1 = self.getQValue(nextState, action)
+        q1 = self.getValue(nextState)
+        dif = (reward + self.discount * q1) - q0
+        feats = self.featExtractor.getFeatures(state, action)
+        for feature in feats:
+            self.weights[feature] += self.alpha * dif * feats[feature]
+
+
+
+        
 
     def final(self, state):
         "Called at the end of each game."
