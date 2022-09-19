@@ -137,9 +137,7 @@ class QLearningAgent(ReinforcementAgent):
           it will be called on your behalf
         """
         "*** YOUR CODE HERE ***"
-        # print(f'Updating: {state}, {action}, {nextState}, {reward}. Current value is {self.getQValue(state, action)}')
 
-        # Capturing the necessary values into shorter variables to make the equation below match the one on the slides more closely
         alpha = self.alpha
         Qk_sa = self.Qvalues[(state, action)]
         r = reward
@@ -148,12 +146,6 @@ class QLearningAgent(ReinforcementAgent):
         
         # For the reference of this calculation, check page 87 of slides "aula15.pdf" (third set of slides for week 9 on moodle)
         self.Qvalues[(state, action)] = (1 - alpha) * Qk_sa + alpha * (r + gamma * max_a_Qk)
-
-        # If you prefer the verbose version, check out this babe here:
-        # self.Qvalues[(state, action)] = (1 - self.alpha) * self.Qvalues[(state, action)] + self.alpha * (reward + self.discount * self.computeValueFromQValues(nextState))
-        
-        # print(f'Updated. New value is {self.getQValue(state, action)}')
-
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)

@@ -44,14 +44,14 @@ class ValueIterationAgent(ValueEstimationAgent):
 
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
-        states = self.mdp.getStates()
+        
         for i in range(iterations):
-            values_km1 = util.Counter()
-            for s in states:
+            value = util.Counter()
+            for s in self.mdp.getStates():
                 ps_actions = self.mdp.getPossibleActions(s)
                 if ps_actions:
-                    values_km1[s] = self.computeQValueFromValues(s, self.computeActionFromValues(s))
-            self.values = values_km1
+                    value[s] = self.computeQValueFromValues(s, self.computeActionFromValues(s))
+            self.values = value
 
     def getValue(self, state):
         """
